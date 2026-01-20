@@ -1,3 +1,8 @@
+*.zip
+*.pdf
+*.pptx
+
+# ========= from https://github.com/jupyter/notebook/blob/main/.gitignore =========
 *.bundle.*
 lib/
 node_modules/
