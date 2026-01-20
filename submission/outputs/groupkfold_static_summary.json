@@ -1,0 +1,25 @@
+{
+  "feature_mode": "static",
+  "folds": 5,
+  "nse_mean": 0.9893917101374413,
+  "nse_median": 0.994234581258864,
+  "coverage_mean": 0.29820785110467246,
+  "winkler_mean": 188.149198587789,
+  "dropped_static_cols": [
+    "rise_rate",
+    "fall_rate",
+    "autocorr",
+    "annual_variab",
+    "recovery_constante",
+    "recession_constante",
+    "average_seasonal_fluctuations",
+    "parde_season",
+    "bimodal",
+    "richards",
+    "nom",
+    "old_bss",
+    "codes_bdlisa",
+    "limnit"
+  ],
+  "results_csv": "submission/outputs/groupkfold_static.csv"
+}

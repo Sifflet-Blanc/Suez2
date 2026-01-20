@@ -1,0 +1,31 @@
+{
+  "feature_mode": "ar",
+  "test_ratio": 0.2,
+  "min_obs": 365,
+  "global": {
+    "nse": 0.999996055572504,
+    "winkler": 1.2556996673806815,
+    "coverage": 0.9419812837391908,
+    "n_obs": 118186,
+    "n_stations": 78
+  },
+  "nse_mean": 0.8967495876392516,
+  "nse_median": 0.9138696196986685,
+  "dropped_static_cols": [
+    "rise_rate",
+    "fall_rate",
+    "autocorr",
+    "annual_variab",
+    "recovery_constante",
+    "recession_constante",
+    "average_seasonal_fluctuations",
+    "parde_season",
+    "bimodal",
+    "richards",
+    "nom",
+    "old_bss",
+    "codes_bdlisa",
+    "limnit"
+  ],
+  "results_csv": "submission/outputs/timesplit_ar.csv"
+}
