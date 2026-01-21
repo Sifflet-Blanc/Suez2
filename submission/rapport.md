@@ -14,7 +14,7 @@ Note: les forcages hydrometeorologiques ne sont pas presentes dans le dossier fo
 2. Features dynamiques (mode `ar`): lags (1, 7, 30, 90), statistiques glissantes (moyenne, ecart-type) et variables saisonnieres (sin/cos du jour de l'annee).
 3. Features statiques (modes `static` / `static_min`): colonnes numeriques et categorielle(s) encodees ordinalement, avec retrait des colonnes a cardinalite trop elevee et des signatures derivees.
 4. Modele: `HistGradientBoostingRegressor` avec imputation simple.
-5. Intervalles 95%: quantiles des residus sur l'ensemble d'entrainement.
+5. Intervalles 95%: quantiles des residus (option conformal via un jeu de calibration).
 6. Evaluation: Nash-Sutcliffe et score de Winkler (validation group k-fold par BSS_ID).
 7. Evaluation temporelle (mode `ar`): entrainement sur 80% du debut de chaque serie et test sur 20% de fin.
 
@@ -43,6 +43,10 @@ python3 code.py evaluate --data-dir ../datasets --out-dir ./outputs --mode stati
 Evaluation temporelle (reconstitution avec historique disponible):
 ```
 python3 code.py evaluate --data-dir ../datasets --out-dir ./outputs --mode ar --strategy timesplit --test-ratio 0.2 --min-obs 365
+```
+Option intervalles conformal (calibration):
+```
+python3 code.py evaluate --data-dir ../datasets --out-dir ./outputs --mode ar --strategy timesplit --test-ratio 0.2 --min-obs 365 --config ../config_conformal.json
 ```
 
 Sorties principales:
@@ -75,6 +79,21 @@ Interpretation: la generalisation inter-stations est faible sans forcages hydrom
 - Winkler global: 1.26
 
 Interpretation: ce mode est adapte a la reconstitution ou la prevision a court terme lorsqu'un historique recent est disponible. Il ne permet pas d'extrapoler vers une station totalement inconnue sans forcages hydrometeorologiques.
+
+## Intervalles (option conformal)
+Si `interval_method=conformal` et `calibration_ratio=0.2`, les bornes 95% sont calculees sur un sous-ensemble de calibration, ce qui donne des intervalles plus fiables hors entrainement.
+Resultats conformal (time split, mode ar):
+- NSE global: 1.000
+- NSE moyen par station: 0.881
+- NSE median par station: 0.900
+- Couverture 95% globale: 0.946
+- Winkler global: 1.21
+
+## Graphes generes
+Les figures suivantes ont ete produites pour une station representative (BSS000UFTP):
+- `submission/outputs/plot_timeseries.png` : serie temporelle (observations, predictions, IC 95%).
+- `submission/outputs/plot_scatter.png` : dispersion y_obs vs y_pred.
+- `submission/outputs/plot_residuals.png` : histogramme des residus.
 
 ## Limites et pistes
 - Ajouter les forcages hydrometeorologiques si disponibles (pluie, debit, ETP, temperature).

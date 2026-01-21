@@ -46,6 +46,8 @@ DEFAULT_CONFIG = {
     "max_rows": None,
     "holdout_ids": None,
     "feature_mode": "ar",
+    "interval_method": "residual",
+    "calibration_ratio": 0.2,
     "random_state": 42,
     "model": {
         "max_depth": 8,
@@ -260,6 +262,24 @@ def _align_features(df: pd.DataFrame, feature_cols: List[str]) -> pd.DataFrame:
     return out[feature_cols]
 
 
+def _split_train_calibration(
+    train_df: pd.DataFrame,
+    ratio: float,
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    if ratio <= 0 or ratio >= 0.5:
+        return train_df, train_df.iloc[0:0]
+    train_parts = []
+    cal_parts = []
+    for bss_id, g in train_df.groupby("BSS_ID"):
+        g = g.sort_values("date")
+        split_idx = max(1, int(len(g) * (1 - ratio)))
+        train_parts.append(g.iloc[:split_idx])
+        cal_parts.append(g.iloc[split_idx:])
+    train_out = pd.concat(train_parts, ignore_index=True) if train_parts else train_df
+    cal_out = pd.concat(cal_parts, ignore_index=True) if cal_parts else train_df.iloc[0:0]
+    return train_out, cal_out
+
+
 def train_model(
     data_dir: Path,
     model_dir: Path,
@@ -271,6 +291,10 @@ def train_model(
     if feature_mode not in ["ar", "static", "static_min"]:
         raise DataError(f"Unsupported feature_mode: {feature_mode}")
     use_target_features = feature_mode == "ar"
+    interval_method = str(cfg.get("interval_method", "residual")).lower()
+    if interval_method not in ["residual", "conformal"]:
+        raise DataError(f"Unsupported interval_method: {interval_method}")
+    calibration_ratio = float(cfg.get("calibration_ratio", 0.2))
 
     static_df, dropped_cols = load_static(data_dir)
     static_df, dropped_mode = _filter_static_by_mode(static_df, feature_mode)
@@ -305,11 +329,20 @@ def train_model(
     num_cols = [c for c in feature_cols if c not in cat_cols]
 
     pipeline = _build_pipeline(num_cols, cat_cols, model_params)
-    pipeline.fit(X_train, y_train)
+    train_fit_df, cal_df = _split_train_calibration(train_df, calibration_ratio) if interval_method == "conformal" else (train_df, train_df.iloc[0:0])
+    X_fit = _align_features(train_fit_df, feature_cols)
+    y_fit = train_fit_df["y"].to_numpy()
+    pipeline.fit(X_fit, y_fit)
 
-    # Residual-based intervals using training data.
-    y_train_pred = pipeline.predict(X_train)
-    residuals = y_train - y_train_pred
+    # Interval estimation.
+    if interval_method == "conformal" and not cal_df.empty:
+        X_cal = _align_features(cal_df, feature_cols)
+        y_cal = cal_df["y"].to_numpy()
+        y_cal_pred = pipeline.predict(X_cal)
+        residuals = y_cal - y_cal_pred
+    else:
+        y_train_pred = pipeline.predict(X_train)
+        residuals = y_train - y_train_pred
     q_low, q_high = np.quantile(residuals, [0.025, 0.975])
 
     metrics = {}
@@ -335,6 +368,8 @@ def train_model(
         "config": cfg,
         "model_params": model_params,
         "feature_mode": feature_mode,
+        "interval_method": interval_method,
+        "calibration_ratio": calibration_ratio,
         "feature_cols": feature_cols,
         "dynamic_cols": dynamic_cols,
         "num_cols": num_cols,
@@ -505,6 +540,8 @@ def evaluate_group_kfold(
     if feature_mode not in ["ar", "static", "static_min"]:
         raise DataError(f"Unsupported feature_mode: {feature_mode}")
     use_target_features = feature_mode == "ar"
+    interval_method = str(cfg.get("interval_method", "residual")).lower()
+    calibration_ratio = float(cfg.get("calibration_ratio", 0.2))
 
     static_df, dropped_cols = load_static(data_dir)
     static_df, dropped_mode = _filter_static_by_mode(static_df, feature_mode)
@@ -541,10 +578,19 @@ def evaluate_group_kfold(
         num_cols = [c for c in feature_cols if c not in cat_cols]
 
         pipeline = _build_pipeline(num_cols, cat_cols, model_params)
-        pipeline.fit(X_train, y_train)
+        train_fit_df, cal_df = _split_train_calibration(train_df, calibration_ratio) if interval_method == "conformal" else (train_df, train_df.iloc[0:0])
+        X_fit = _align_features(train_fit_df, feature_cols)
+        y_fit = train_fit_df["y"].to_numpy()
+        pipeline.fit(X_fit, y_fit)
 
-        y_train_pred = pipeline.predict(X_train)
-        residuals = y_train - y_train_pred
+        if interval_method == "conformal" and not cal_df.empty:
+            X_cal = _align_features(cal_df, feature_cols)
+            y_cal = cal_df["y"].to_numpy()
+            y_cal_pred = pipeline.predict(X_cal)
+            residuals = y_cal - y_cal_pred
+        else:
+            y_train_pred = pipeline.predict(X_train)
+            residuals = y_train - y_train_pred
         q_low, q_high = np.quantile(residuals, [0.025, 0.975])
 
         X_test = _align_features(test_df, feature_cols)
@@ -603,6 +649,8 @@ def evaluate_time_split(
     if feature_mode not in ["ar", "static", "static_min"]:
         raise DataError(f"Unsupported feature_mode: {feature_mode}")
     use_target_features = feature_mode == "ar"
+    interval_method = str(cfg.get("interval_method", "residual")).lower()
+    calibration_ratio = float(cfg.get("calibration_ratio", 0.2))
 
     static_df, dropped_cols = load_static(data_dir)
     static_df, dropped_mode = _filter_static_by_mode(static_df, feature_mode)
@@ -648,10 +696,19 @@ def evaluate_time_split(
     num_cols = [c for c in feature_cols if c not in cat_cols]
 
     pipeline = _build_pipeline(num_cols, cat_cols, model_params)
-    pipeline.fit(X_train, y_train)
+    train_fit_df, cal_df = _split_train_calibration(train_df, calibration_ratio) if interval_method == "conformal" else (train_df, train_df.iloc[0:0])
+    X_fit = _align_features(train_fit_df, feature_cols)
+    y_fit = train_fit_df["y"].to_numpy()
+    pipeline.fit(X_fit, y_fit)
 
-    y_train_pred = pipeline.predict(X_train)
-    residuals = y_train - y_train_pred
+    if interval_method == "conformal" and not cal_df.empty:
+        X_cal = _align_features(cal_df, feature_cols)
+        y_cal = cal_df["y"].to_numpy()
+        y_cal_pred = pipeline.predict(X_cal)
+        residuals = y_cal - y_cal_pred
+    else:
+        y_train_pred = pipeline.predict(X_train)
+        residuals = y_train - y_train_pred
     q_low, q_high = np.quantile(residuals, [0.025, 0.975])
 
     X_test = _align_features(test_df, feature_cols)
@@ -685,6 +742,8 @@ def evaluate_time_split(
 
     summary = {
         "feature_mode": feature_mode,
+        "interval_method": interval_method,
+        "calibration_ratio": calibration_ratio,
         "test_ratio": float(test_ratio),
         "min_obs": int(min_obs),
         "global": global_metrics,

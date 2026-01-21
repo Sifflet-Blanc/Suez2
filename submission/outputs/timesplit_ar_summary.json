@@ -1,16 +1,18 @@
 {
   "feature_mode": "ar",
+  "interval_method": "conformal",
+  "calibration_ratio": 0.2,
   "test_ratio": 0.2,
   "min_obs": 365,
   "global": {
-    "nse": 0.999996055572504,
-    "winkler": 1.2556996673806815,
-    "coverage": 0.9419812837391908,
+    "nse": 0.9999964635506277,
+    "winkler": 1.2073132486922,
+    "coverage": 0.9461611358367319,
     "n_obs": 118186,
     "n_stations": 78
   },
-  "nse_mean": 0.8967495876392516,
-  "nse_median": 0.9138696196986685,
+  "nse_mean": 0.8813432170843444,
+  "nse_median": 0.9002595117428593,
   "dropped_static_cols": [
     "rise_rate",
     "fall_rate",

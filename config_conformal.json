@@ -1,0 +1,5 @@
+{
+  "interval_method": "conformal",
+  "calibration_ratio": 0.2,
+  "feature_mode": "ar"
+}

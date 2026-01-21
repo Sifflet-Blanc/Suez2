@@ -56,6 +56,7 @@ def main():
     eval_parser.add_argument("--max-items", type=int, default=None)
     eval_parser.add_argument("--test-ratio", type=float, default=0.2)
     eval_parser.add_argument("--min-obs", type=int, default=365)
+    eval_parser.add_argument("--config", type=Path, default=None)
 
     args = parser.parse_args()
 
@@ -72,10 +73,12 @@ def main():
         result = reconstruct(args.data_dir, args.model_dir, args.out_dir, bss_ids=bss_ids)
         print(json.dumps(result, indent=2))
     elif args.command == "evaluate":
+        cfg = _load_config(args.config) if args.config else None
         if args.strategy == "loo":
             result = evaluate_leave_one_out(
                 args.data_dir,
                 args.out_dir,
+                config=cfg,
                 feature_mode=args.mode,
                 max_items=args.max_items,
             )
@@ -83,6 +86,7 @@ def main():
             result = evaluate_time_split(
                 args.data_dir,
                 args.out_dir,
+                config=cfg,
                 feature_mode=args.mode,
                 test_ratio=args.test_ratio,
                 min_obs=args.min_obs,
@@ -91,6 +95,7 @@ def main():
             result = evaluate_group_kfold(
                 args.data_dir,
                 args.out_dir,
+                config=cfg,
                 feature_mode=args.mode,
                 n_splits=args.splits,
             )
