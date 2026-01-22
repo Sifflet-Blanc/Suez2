@@ -17,6 +17,7 @@ warnings.filterwarnings('ignore')
 
 PIEZO_FILE = "time_series/piezos/BSS001CVLZ.csv"
 FORCAGE_FILE = "time_series/forçages/A146020302.txt"
+# MERGE_FILE = "dataset/A146020302_merged.csv"
 
 SEQUENCE_LENGTH = 30 #30 jours d'entrée
 FORECAST_HORIZON = 7 #7 jours de prédiction
@@ -46,6 +47,16 @@ df = df_piezo.join(df_forcage, how='inner')
 df = df[df.index >= '2000-01-01']
 df = df.resample('D').mean().interpolate(method='linear', limit_direction='both')
 df = df.replace(-99, np.nan).interpolate(method='linear', limit_direction='both').dropna()
+
+# Version pour utiliser le merge file (version des deux fichiers combinés)
+
+#df = pd.read_csv(MERGE_FILE)
+#df['Date'] = pd.to_datetime(df['Date'], format='%Y%m%d')
+#df = df.set_index('Date')
+#df = df[features  + [target]]
+#df = df[df.index >= '2000-01-01']
+#df = df.resample('D').mean().interpolate(method='linear', limit_direction='both')
+#df = df.replace(-99, np.nan).interpolate(method='linear', limit_direction='both').dropna()
 
 # on prépare les données
 
@@ -181,6 +192,10 @@ rmse = np.sqrt(mean_squared_error(actuals_flat, preds_flat))
 mae = mean_absolute_error(actuals_flat, preds_flat)
 r2 = r2_score(actuals_flat, preds_flat)
 
+print(f"RMSE (Root Mean Squared Error): {rmse:.4f}")
+print(f"MAE (Mean Absolute Error): {mae:.4f}")
+print(f"R² Score: {r2:.4f}")
+
 # graph de fin
 
 fig, ax = plt.subplots(figsize=(14, 5))
@@ -197,3 +212,4 @@ ax.grid(True, alpha=0.3)
 plt.tight_layout()
 plt.savefig('rolling_forecast.png', dpi=150, bbox_inches='tight')
 plt.show()
+
