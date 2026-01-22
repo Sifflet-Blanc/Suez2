@@ -57,6 +57,10 @@ Pierre-Antoine CASSARD
 
 Thibault BUTEAU 
 
+Hugo BILLERIT
+
+Elric MARIANO
+
 Lilian DELETOILE
 
 Iskander HADJI 
