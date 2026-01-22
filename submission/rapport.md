@@ -94,6 +94,18 @@ Les figures suivantes ont ete produites pour une station representative (BSS000U
 - `submission/outputs/plot_timeseries.png` : serie temporelle (observations, predictions, IC 95%).
 - `submission/outputs/plot_scatter.png` : dispersion y_obs vs y_pred.
 - `submission/outputs/plot_residuals.png` : histogramme des residus.
+Autres representations:
+- `submission/outputs/plot_monthly_cycle.png` : cycle mensuel moyen (y_obs vs y_pred).
+- `submission/outputs/plot_mae_30d.png` : erreur absolue moyenne glissante (30 jours).
+- `submission/outputs/plot_coverage_by_month.png` : couverture 95% par mois.
+- `submission/outputs/plot_nse_distribution.png` : distribution du NSE par station (time split).
+- `submission/outputs/plot_pca_static.png` : ACP des attributs statiques numeriques.
+- `submission/outputs/plot_pca_variance.png` : variance expliquee par PC1/PC2 (PC1=29.8%, PC2=15.1%).
+- `submission/outputs/plot_pca_correlation_circle.png` : cercle des correlations (ACP).
+Graphiques plus explicites (avec annotations de metriques):
+- `submission/outputs/plot_timeseries_annotated.png` : serie temporelle + NSE/MAE/RMSE.
+- `submission/outputs/plot_scatter_annotated.png` : dispersion avec ligne y=x et regression.
+- `submission/outputs/plot_residuals_annotated.png` : residus dans le temps + moyenne glissante.
 
 ## Limites et pistes
 - Ajouter les forcages hydrometeorologiques si disponibles (pluie, debit, ETP, temperature).
