@@ -19,12 +19,12 @@ PIEZO_FILE = "time_series/piezos/BSS001CVLZ.csv"
 FORCAGE_FILE = "time_series/forçages/A146020302.txt"
 # MERGE_FILE = "dataset/A146020302_merged.csv"
 
-SEQUENCE_LENGTH = 30 #30 jours d'entrée
+SEQUENCE_LENGTH = 360 #360 jours d'entrée
 FORECAST_HORIZON = 7 #7 jours de prédiction
-HIDDEN_SIZE = 64
-NUM_LAYERS = 2 #plus de layer c long 3 c faisable
-DROPOUT = 0.2
-LEARNING_RATE = 0.001
+HIDDEN_SIZE = 128
+NUM_LAYERS = 1 #plus de layer c long 3 c faisable
+DROPOUT = 0.35
+LEARNING_RATE = 0.0003
 EPOCHS = 100 #100-200 pas plus
 BATCH_SIZE = 32
 
@@ -113,7 +113,7 @@ train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
 
 model = LSTMModel(len(features), HIDDEN_SIZE, NUM_LAYERS, FORECAST_HORIZON, DROPOUT).to(device)
 criterion = nn.MSELoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
+optimizer = torch.optim.AdamW(model.parameters(), lr=LEARNING_RATE)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=10, factor=0.5)
 
 best_val_loss = float('inf')
@@ -212,4 +212,5 @@ ax.grid(True, alpha=0.3)
 plt.tight_layout()
 plt.savefig('rolling_forecast.png', dpi=150, bbox_inches='tight')
 plt.show()
+
 
