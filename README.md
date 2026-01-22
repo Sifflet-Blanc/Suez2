@@ -40,3 +40,16 @@ Le dossier Dataset est vide, pour récupérer les données, contactez
 
 
 # Contributeurs
+
+Wassim AARAB
+Omar EL ALAOUI EL ISLAMILI
+Abdelhafid GUEROUANI
+Florent CRAHAY--BOUDOU
+Mathis PEREIRA PEDRO 
+Hugo BASTIEN
+Pierre-Antoine CASSARD
+Thibault BUTEAU 
+Lilian DELETOILE
+Iskander HADJI 
+Victor AUDUREAU
+
