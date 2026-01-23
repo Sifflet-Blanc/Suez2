@@ -54,10 +54,13 @@ def load_X_Y(filepath):
             X.append(np.concatenate([time_features] + [[float(row[i])] for i in inputs_columns]))
         return np.array(X)
 
-def plot_results(y_pred, y_test, sample=800, diff = False):
-    #fig = plt.figure(figsize=(15, 7))
+def plot_results(y_pred, y_test,forecast, sample=800, diff = False):
+    fig = plt.figure(figsize=(15, 7))
     plt.subplot(211)
     plt.plot(np.arange(sample), y_pred[:sample], lw=3, label="ESN prediction")
+    plt.xlabel("Temps en jours")
+    plt.ylabel("Niveau de la nappe")
+    plt.title(f"Prédiction à {forecast} jours")
     plt.plot(np.arange(sample), y_test[:sample], linestyle="--", lw=2, label="True value")
     if diff:
         plt.plot(np.abs(y_test[:sample] - y_pred[:sample]), label="Absolute deviation")
